@@ -382,7 +382,7 @@ a{color:var(--indigo-500);text-decoration:none}a:hover{text-decoration:underline
       </div>
       <div class="test-body">
         <div class="form-grid">
-          <div class="form-group"><label class="form-label">URL de base de l'instance</label><input type="text" class="form-input" id="testBaseUrl" placeholder="https://votre-instance.akuiteo.fr" oninput="updateCodeBlocks()"></div>
+          <div class="form-group"><label class="form-label">URL de base de l'instance (sans /akuiteo)</label><input type="text" class="form-input" id="testBaseUrl" placeholder="https://votre-instance.myakuiteo.com" oninput="updateCodeBlocks()"></div>
           <div class="form-group"><label class="form-label">Login</label><input type="text" class="form-input" id="testLogin" placeholder="votre-login" oninput="updateCodeBlocks()"></div>
           <div class="form-group"><label class="form-label">Mot de passe</label><input type="password" class="form-input" id="testPassword" placeholder="••••••••" oninput="updateCodeBlocks()"></div>
         </div>
@@ -425,6 +425,20 @@ a{color:var(--indigo-500);text-decoration:none}a:hover{text-decoration:underline
         <div class="code-section">
           <div class="code-header"><label>🐍 Code Python (requests)</label><button class="copy-btn" onclick="copyCode('pyBlock')">Copier</button></div>
           <div class="code-block py" id="pyBlock"></div>
+        </div>
+
+        <!-- Send button + response -->
+        <div style="margin:16px 0">
+          <button onclick="sendApiRequest()" style="background:var(--indigo-600);color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s">
+            ▶ Envoyer la requête
+          </button>
+          <span id="sendStatus" style="margin-left:12px;font-size:13px;color:var(--gray-500)"></span>
+        </div>
+        <div id="responseSection" style="display:none">
+          <div class="code-section">
+            <div class="code-header"><label>📥 Réponse API</label><span id="responseStatus" style="margin-left:8px;font-weight:700"></span><button class="copy-btn" onclick="copyCode('responseBlock')">Copier</button></div>
+            <div class="code-block" id="responseBlock" style="max-height:400px;overflow:auto"></div>
+          </div>
         </div>
 
         <div class="warning-box">
@@ -1406,6 +1420,31 @@ function renderEntitySummary() {
 }
 
 // ======================== INIT ========================
+// ======================== CORS PROXY ========================
+function proxyUrl(targetUrl) {
+  return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+}
+
+async function corsProxyFetch(url, options) {
+  // Use allorigins proxy to bypass CORS restrictions
+  // For GET requests, we can pass auth via the URL proxy
+  // For all methods, we route through the proxy
+  const proxyTarget = url;
+  const proxyEndpoint = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(proxyTarget);
+
+  // allorigins only supports GET, so for non-GET we try direct first, then corsproxy.io
+  if (options.method && options.method !== 'GET') {
+    const proxyEndpoint2 = 'https://corsproxy.io/?' + encodeURIComponent(url);
+    return fetch(proxyEndpoint2, options);
+  }
+
+  // For GET, build URL with basic auth in the URL for the proxy
+  return fetch(proxyEndpoint, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' }
+  });
+}
+
 // ======================== CONNECTION TEST ========================
 async function testConnection() {
   const btn = document.getElementById('connBtn');
@@ -1424,8 +1463,11 @@ async function testConnection() {
   btn.className = 'conn-btn checking';
   label.textContent = 'Test en cours...';
 
+  const endpoint = document.getElementById('testEndpoint').value || '/akuiteo/rest/workforce/employees';
+  const url = baseUrl + endpoint;
+
   try {
-    const url = baseUrl + '/akuiteo/rest/workforce/employees';
+    // Try direct fetch first
     const resp = await fetch(url, {
       method: 'GET',
       headers: {
@@ -1433,7 +1475,7 @@ async function testConnection() {
         'Accept': 'application/json'
       }
     });
-    if (resp.ok || resp.status === 200) {
+    if (resp.ok) {
       btn.className = 'conn-btn connected';
       label.textContent = 'Connecté';
     } else if (resp.status === 401 || resp.status === 403) {
@@ -1444,8 +1486,100 @@ async function testConnection() {
       label.textContent = 'Erreur ' + resp.status;
     }
   } catch (e) {
-    btn.className = 'conn-btn disconnected';
-    label.textContent = 'Injoignable';
+    // CORS blocked - try via proxy
+    try {
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+      const resp2 = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Basic ' + btoa(login + ':' + password),
+          'Accept': 'application/json'
+        }
+      });
+      if (resp2.ok) {
+        btn.className = 'conn-btn connected';
+        label.textContent = 'Connecté (via proxy)';
+      } else if (resp2.status === 401 || resp2.status === 403) {
+        btn.className = 'conn-btn disconnected';
+        label.textContent = 'Erreur ' + resp2.status + ' (auth)';
+      } else {
+        btn.className = 'conn-btn disconnected';
+        label.textContent = 'Erreur ' + resp2.status;
+      }
+    } catch (e2) {
+      btn.className = 'conn-btn disconnected';
+      label.textContent = 'Injoignable (CORS bloqué)';
+    }
+  }
+}
+
+// ======================== SEND API REQUEST ========================
+async function sendApiRequest() {
+  const v = getTestValues();
+  const statusEl = document.getElementById('sendStatus');
+  const responseSection = document.getElementById('responseSection');
+  const responseBlock = document.getElementById('responseBlock');
+  const responseStatus = document.getElementById('responseStatus');
+
+  if (!v.baseUrl || v.baseUrl.includes('[instance]') || !document.getElementById('testLogin').value || !document.getElementById('testPassword').value) {
+    statusEl.textContent = 'Renseignez l\'URL, le login et le mot de passe.';
+    statusEl.style.color = '#EF4444';
+    return;
+  }
+
+  statusEl.textContent = 'Envoi en cours...';
+  statusEl.style.color = 'var(--gray-500)';
+
+  const url = v.baseUrl + v.endpoint;
+  const login = document.getElementById('testLogin').value;
+  const password = document.getElementById('testPassword').value;
+  const isWrite = v.method !== 'GET';
+
+  const headers = {
+    'Authorization': 'Basic ' + btoa(login + ':' + password),
+    'Accept': 'application/json'
+  };
+  if (isWrite) headers['Content-Type'] = 'application/json';
+
+  const fetchOpts = {
+    method: v.method,
+    headers: headers
+  };
+  if (isWrite && v.body) fetchOpts.body = v.body;
+
+  async function doFetch(targetUrl) {
+    const resp = await fetch(targetUrl, fetchOpts);
+    const text = await resp.text();
+    let pretty = text;
+    try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch(e) {}
+    return { status: resp.status, ok: resp.ok, body: pretty };
+  }
+
+  try {
+    let result;
+    try {
+      result = await doFetch(url);
+    } catch (e) {
+      // CORS blocked, try proxy
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+      result = await doFetch(proxyUrl);
+      statusEl.textContent = '(via proxy CORS)';
+      statusEl.style.color = 'var(--gray-400)';
+    }
+
+    responseSection.style.display = '';
+    responseStatus.textContent = result.status;
+    responseStatus.style.color = result.ok ? '#10B981' : '#EF4444';
+    responseBlock.textContent = result.body;
+    if (!statusEl.textContent.includes('proxy')) {
+      statusEl.textContent = '';
+    }
+  } catch (e) {
+    responseSection.style.display = '';
+    responseStatus.textContent = 'Erreur';
+    responseStatus.style.color = '#EF4444';
+    responseBlock.textContent = 'Impossible de joindre l\'API.\n\nErreur: ' + e.message + '\n\nSolutions :\n1. Vérifiez l\'URL de base (ex: https://novamingenierie-test.myakuiteo.com)\n2. Utilisez les commandes cURL ou Python générées ci-dessus (pas de restriction CORS)\n3. Testez depuis Postman ou un outil similaire';
+    statusEl.textContent = '';
   }
 }
 
