@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akuiteo API Explorer v5</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --indigo-900:#312e81;--indigo-800:#3730a3;--indigo-700:#4338ca;--indigo-600:#4f46e5;
+  --indigo-500:#6366f1;--indigo-200:#c7d2fe;--indigo-100:#e0e7ff;--indigo-50:#eef2ff;
+  --purple-900:#581c87;--emerald-800:#065f46;--emerald-300:#6ee7b7;--emerald-200:#a7f3d0;
+  --emerald-100:#d1fae5;--emerald-50:#ecfdf5;--emerald-700:#047857;
+  --blue-800:#1e40af;--blue-300:#93c5fd;--blue-200:#bfdbfe;--blue-100:#dbeafe;--blue-50:#eff6ff;
+  --amber-800:#92400e;--amber-300:#fcd34d;--amber-200:#fde68a;--amber-100:#fef3c7;--amber-50:#fffbeb;
+  --red-800:#991b1b;--red-200:#fecaca;--red-100:#fee2e2;
+  --orange-700:#c2410c;--orange-200:#fed7aa;--orange-50:#fff7ed;
+  --green-700:#15803d;--green-200:#bbf7d0;--green-50:#f0fdf4;
+  --yellow-300:#fde047;--yellow-200:#fef08a;--yellow-50:#fefce8;--yellow-800:#854d0e;
+  --purple-200:#e9d5ff;--purple-100:#f3e8ff;
+  --gray-900:#111827;--gray-800:#1f2937;--gray-700:#374151;--gray-600:#4b5563;
+  --gray-500:#6b7280;--gray-400:#9ca3af;--gray-300:#d1d5db;--gray-200:#e5e7eb;
+  --gray-100:#f3f4f6;--gray-50:#f9fafb;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f9fafb;color:#111827;line-height:1.5;min-height:100vh}
+a{color:var(--indigo-500);text-decoration:none}a:hover{text-decoration:underline}
+
+/* Header */
+.header{background:linear-gradient(135deg,var(--indigo-900),var(--indigo-800),var(--purple-900));color:#fff;padding:0}
+.header-inner{max-width:1200px;margin:0 auto;padding:24px 20px 0}
+.header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.logo-area{display:flex;align-items:center;gap:12px}
+.logo-icon{width:44px;height:44px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.logo-title{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.logo-badge{background:rgba(255,255,255,.2);font-size:11px;padding:2px 10px;border-radius:20px;font-weight:600}
+.logo-sub{color:var(--indigo-200);font-size:13px;margin-top:2px}
+.stats{display:flex;gap:8px}
+.stat-box{background:rgba(255,255,255,.1);border-radius:10px;padding:8px 16px;text-align:center}
+.stat-num{font-size:22px;font-weight:800}
+.stat-num.green{color:var(--emerald-300)}.stat-num.orange{color:var(--amber-300)}
+.stat-label{color:var(--indigo-200);font-size:11px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-top:18px}
+.tab-btn{padding:10px 20px;border:none;border-radius:10px 10px 0 0;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;background:transparent;color:var(--indigo-200)}
+.tab-btn:hover{background:rgba(255,255,255,.1)}
+.tab-btn.active{background:var(--gray-50);color:var(--indigo-900)}
+
+/* Main */
+.main{max-width:1200px;margin:0 auto;padding:24px 20px}
+
+/* Filters */
+.filters{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:24px}
+.search-input{border:1px solid var(--gray-300);border-radius:10px;padding:9px 14px;font-size:13px;flex:1;min-width:260px;outline:none;transition:.2s}
+.search-input:focus{border-color:var(--indigo-500);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.filter-group{display:flex;gap:2px;background:var(--gray-100);border-radius:10px;padding:3px}
+.filter-btn{padding:6px 14px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;background:transparent;color:var(--gray-600)}
+.filter-btn:hover{background:var(--gray-200)}
+.filter-btn.active{background:#fff;color:var(--indigo-700);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.reset-btn{padding:6px 14px;background:var(--indigo-100);color:var(--indigo-700);border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.reset-btn:hover{background:var(--indigo-200)}
+
+/* Domain cards grid */
+.domain-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}
+.domain-card{text-align:left;padding:18px;border-radius:14px;border:2px solid var(--gray-200);background:#fff;cursor:pointer;transition:.25s}
+.domain-card:hover{box-shadow:0 8px 25px rgba(0,0,0,.08);border-color:var(--gray-300)}
+.domain-card.selected{border-color:var(--indigo-500);background:var(--indigo-50);box-shadow:0 4px 15px rgba(79,70,229,.15)}
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.card-icon{font-size:28px}
+.card-name{font-weight:700;font-size:15px}
+.card-path{font-size:11px;color:var(--gray-500);font-family:monospace}
+.card-desc{font-size:12px;color:var(--gray-600);margin-bottom:12px}
+.card-badges{display:flex;gap:6px;flex-wrap:wrap}
+.card-badge{font-size:11px;padding:2px 10px;border-radius:20px;font-weight:500}
+.card-badge.read{background:var(--emerald-50);color:var(--emerald-700);border:1px solid var(--emerald-200)}
+.card-badge.write{background:var(--orange-50);color:var(--orange-700);border:1px solid var(--orange-200)}
+.card-badge.groups{background:var(--gray-100);color:var(--gray-600)}
+
+/* Endpoint sections */
+.domain-section{background:#fff;border-radius:14px;border:1px solid var(--gray-200);overflow:hidden;margin-bottom:16px}
+.domain-header{padding:14px 20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:12px;border-left:4px solid var(--indigo-500)}
+.domain-header-icon{font-size:22px}
+.domain-header-name{font-weight:700;font-size:15px}
+.domain-header-path{font-size:11px;color:var(--gray-500);font-family:monospace;display:block}
+.domain-header-auth{margin-left:auto;font-size:11px;color:var(--gray-400)}
+
+.tag-header{width:100%;padding:10px 20px;display:flex;align-items:center;gap:8px;border:none;background:none;cursor:pointer;text-align:left;font-size:14px;transition:.15s}
+.tag-header:hover{background:var(--gray-50)}
+.tag-arrow{color:var(--gray-400);font-size:11px;width:14px}
+.tag-name{font-weight:700;font-size:13px;color:var(--gray-800)}
+.tag-desc{font-size:12px;color:var(--gray-500)}
+.tag-count{margin-left:auto;font-size:11px;color:var(--gray-400)}
+
+.endpoints-table{width:100%;padding:0 20px 12px;border-collapse:collapse}
+.ep-row{transition:.15s}
+.ep-row:hover{background:var(--indigo-50)}
+.ep-row td{padding:6px 8px;font-size:12px;vertical-align:middle}
+
+/* Method badges */
+.method-badge{display:inline-block;padding:2px 8px;font-size:11px;font-weight:700;border-radius:4px;border:1px solid;font-family:monospace}
+.method-badge.GET{background:var(--emerald-100);color:var(--emerald-800);border-color:var(--emerald-200)}
+.method-badge.POST{background:var(--blue-100);color:var(--blue-800);border-color:var(--blue-200)}
+.method-badge.PUT{background:var(--amber-100);color:var(--amber-800);border-color:var(--amber-200)}
+.method-badge.DELETE{background:var(--red-100);color:var(--red-800);border-color:var(--red-200)}
+.method-badge.PATCH{background:var(--purple-100);color:var(--purple-800);border-color:var(--purple-200)}
+
+.mode-badge{display:inline-block;padding:2px 10px;font-size:11px;border-radius:20px;font-weight:500}
+.mode-badge.read{background:var(--green-50);color:var(--green-700);border:1px solid var(--green-200)}
+.mode-badge.write{background:var(--orange-50);color:var(--orange-700);border:1px solid var(--orange-200)}
+
+.ep-path{font-family:monospace;color:var(--gray-700);font-size:12px}
+.ep-desc{color:var(--gray-600);font-size:12px}
+.test-btn{font-size:11px;background:var(--indigo-600);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;opacity:0;transition:.2s;white-space:nowrap}
+.ep-row:hover .test-btn{opacity:1}
+.test-btn:hover{background:var(--indigo-700)}
+
+/* Setup view */
+.setup-card{background:#fff;border-radius:14px;border:1px solid var(--gray-200);overflow:hidden;margin-bottom:24px;max-width:780px;margin-left:auto;margin-right:auto}
+.setup-header{padding:20px 24px;background:linear-gradient(135deg,var(--indigo-50),#f5f3ff);border-bottom:1px solid var(--gray-200)}
+.setup-header h2{font-size:18px;font-weight:800}
+.setup-header p{font-size:13px;color:var(--gray-600);margin-top:4px}
+
+.info-box{background:var(--blue-50);border:1px solid var(--blue-200);border-radius:10px;padding:16px;margin-bottom:24px}
+.info-box h3{font-size:13px;font-weight:700;color:#1e3a5f;margin-bottom:8px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.info-grid div{font-size:12px;color:#1e3a5f}
+.info-grid span{font-weight:600}
+
+.step-btn{width:100%;text-align:left;padding:12px 16px;border-radius:10px;border:1px solid var(--gray-200);display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s;background:var(--gray-50);margin-bottom:8px}
+.step-btn:hover{border-color:var(--gray-300)}
+.step-btn.active{border-color:var(--indigo-300);background:var(--indigo-50)}
+.step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--gray-300);color:#fff;flex-shrink:0}
+.step-btn.active .step-num{background:var(--indigo-600)}
+.step-title{font-weight:700;font-size:13px}
+.step-arrow{margin-left:auto;color:var(--gray-400);font-size:11px}
+.step-detail{margin-left:44px;margin-bottom:12px}
+.step-code{background:var(--gray-900);color:#86efac;border-radius:10px;padding:16px;font-size:12px;white-space:pre-wrap;font-family:monospace;margin-bottom:8px;overflow-x:auto}
+.step-tip{background:var(--yellow-50);border:1px solid var(--yellow-200);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--yellow-800)}
+
+/* Schema table */
+.schema-card{background:#fff;border-radius:14px;border:1px solid var(--gray-200);overflow:hidden;max-width:780px;margin:0 auto}
+.schema-header{padding:12px 24px;border-bottom:1px solid var(--gray-200);background:var(--gray-50);font-weight:700;font-size:13px}
+.schema-table{width:100%;border-collapse:collapse;font-size:12px}
+.schema-table th{text-align:left;padding:8px 16px;color:var(--gray-500);font-weight:500;border-bottom:1px solid var(--gray-200)}
+.schema-table td{padding:8px 16px;border-bottom:1px solid var(--gray-100)}
+.schema-type{font-family:monospace;color:var(--indigo-700)}
+
+/* Test view */
+.test-card{background:#fff;border-radius:14px;border:1px solid var(--gray-200);overflow:hidden;max-width:900px;margin:0 auto}
+.test-header{padding:20px 24px;background:linear-gradient(135deg,var(--green-50),var(--emerald-50));border-bottom:1px solid var(--gray-200)}
+.test-header h2{font-size:18px;font-weight:800}
+.test-header p{font-size:13px;color:var(--gray-600);margin-top:4px}
+.test-body{padding:24px;display:flex;flex-direction:column;gap:16px}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.form-row{display:flex;gap:12px;align-items:flex-end}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.flex1{flex:1}
+.form-group.w28{width:120px}
+.form-label{font-size:12px;font-weight:600;color:var(--gray-700)}
+.form-input,.form-select,.form-textarea{border:1px solid var(--gray-300);border-radius:10px;padding:9px 14px;font-size:13px;outline:none;transition:.2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--indigo-500);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.form-select{appearance:auto;font-family:monospace}
+.form-input.mono,.form-textarea{font-family:monospace}
+.form-textarea{resize:vertical;min-height:100px}
+
+.quick-label{font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:6px}
+.quick-chips{display:flex;flex-wrap:wrap;gap:4px}
+.quick-chip{font-size:12px;padding:6px 12px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;cursor:pointer;transition:.15s;position:relative}
+.quick-chip:hover{background:var(--gray-200)}
+.quick-chip.open{background:var(--indigo-100);border-color:var(--indigo-300);color:var(--indigo-700)}
+.quick-dropdown{display:none;position:absolute;z-index:100;top:calc(100% + 6px);left:0;background:#fff;border:1px solid var(--gray-200);border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.18);padding:6px;min-width:380px;max-height:350px;overflow-y:auto}
+.quick-dropdown.open{display:block}
+.quick-ep-btn{width:100%;text-align:left;padding:7px 10px;font-size:12px;border:none;background:none;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px;transition:.12s}
+.quick-ep-btn:hover{background:var(--indigo-50)}
+.quick-ep-path{font-family:monospace;color:var(--gray-700);font-size:11px}
+.quick-ep-desc{color:var(--gray-500);font-size:10px;margin-left:auto;white-space:nowrap}
+
+.code-section label{font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px}
+.code-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.copy-btn{font-size:11px;background:var(--gray-100);border:none;padding:4px 10px;border-radius:6px;cursor:pointer;transition:.15s}
+.copy-btn:hover{background:var(--gray-200)}
+.code-block{background:var(--gray-900);border-radius:10px;padding:16px;font-size:12px;white-space:pre-wrap;font-family:monospace;overflow-x:auto;line-height:1.6}
+.code-block.curl{color:#86efac}
+.code-block.js{color:var(--blue-300)}
+.code-block.py{color:var(--yellow-300)}
+
+.warning-box{background:var(--amber-50);border:1px solid var(--amber-200);border-radius:10px;padding:16px;font-size:12px;color:var(--amber-800)}
+
+/* Footer */
+.footer{max-width:1200px;margin:0 auto;padding:16px 20px;text-align:center;font-size:11px;color:var(--gray-400)}
+
+/* Responsive */
+@media(max-width:768px){
+  .header-top{flex-direction:column;align-items:flex-start}
+  .stats{flex-wrap:wrap}
+  .form-grid{grid-template-columns:1fr}
+  .form-row{flex-direction:column;align-items:stretch}
+  .form-group.w28{width:100%}
+  .domain-grid{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr}
+  .endpoints-table{font-size:11px}
+}
+.hidden{display:none!important}
+
+/* Schema view */
+.entity-summary-card{background:#fff;border-radius:12px;border:1px solid var(--gray-200);overflow:hidden;transition:.2s;cursor:pointer}
+.entity-summary-card:hover{box-shadow:0 4px 15px rgba(0,0,0,.08);border-color:var(--gray-300)}
+.entity-summary-header{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--gray-100)}
+.entity-summary-icon{font-size:20px}
+.entity-summary-name{font-weight:700;font-size:13px}
+.entity-summary-domain{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;color:#fff}
+.entity-summary-body{padding:12px 16px}
+.entity-field{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:var(--gray-600)}
+.entity-field-key{color:var(--amber-800);font-size:10px}
+.entity-field-fk{color:var(--indigo-600);font-size:10px}
+.entity-field-name{font-family:monospace;color:var(--gray-800);font-weight:500}
+.entity-field-type{color:var(--gray-400);font-size:10px}
+.entity-rw{display:flex;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--gray-100)}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <div class="logo-area">
+          <div class="logo-icon">⚡</div>
+          <span class="logo-title">Akuiteo API Explorer</span>
+          <span class="logo-badge">v5</span>
+        </div>
+        <div class="logo-sub" style="margin-left:56px">Cartographie interactive des API REST Akuiteo</div>
+      </div>
+      <div class="stats">
+        <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Endpoints</div></div>
+        <div class="stat-box"><div class="stat-num green" id="stat-read">0</div><div class="stat-label">Lecture</div></div>
+        <div class="stat-box"><div class="stat-num orange" id="stat-write">0</div><div class="stat-label">Écriture</div></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchView('map')">🗺️ Carte des API</button>
+      <button class="tab-btn" onclick="switchView('schema')">🗄️ Schéma BDD</button>
+      <button class="tab-btn" onclick="switchView('setup')">🔌 Guide de connexion</button>
+      <button class="tab-btn" onclick="switchView('test')">🧪 Testeur API</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  <!-- MAP VIEW -->
+  <div id="view-map">
+    <div class="filters">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Rechercher un endpoint, domaine..." oninput="applyFilters()">
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="setFilterMode('all',this)">Tous</button>
+        <button class="filter-btn" onclick="setFilterMode('read',this)">📖 Lecture</button>
+        <button class="filter-btn" onclick="setFilterMode('write',this)">✏️ Écriture</button>
+      </div>
+      <button class="reset-btn hidden" id="resetBtn" onclick="resetDomainFilter()">✕ Réinitialiser le filtre</button>
+    </div>
+    <div class="domain-grid" id="domainGrid"></div>
+    <div id="endpointSections"></div>
+  </div>
+
+  <!-- SETUP VIEW -->
+  <div id="view-setup" class="hidden">
+
+  <!-- SCHEMA / DATABASE VIEW -->
+  <div id="view-schema" class="hidden">
+    <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 style="font-size:18px;font-weight:800;color:var(--gray-900)">🗄️ Schéma des bases de données interrogées</h2>
+        <p style="font-size:13px;color:var(--gray-600);margin-top:2px">Visualisation des tables et entités accessibles via les API REST Akuiteo v5</p>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="filter-btn active" id="schemaViewAll" onclick="setSchemaFilter('all',this)">Toutes les tables</button>
+        <button class="filter-btn" onclick="setSchemaFilter('read',this)">📖 Lecture seule</button>
+        <button class="filter-btn" onclick="setSchemaFilter('write',this)">✏️ Lecture + Écriture</button>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE SVG SCHEMA -->
+    <div id="schemaContainer" style="background:#fff;border-radius:14px;border:1px solid var(--gray-200);overflow:hidden;margin-bottom:24px">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--gray-100);background:linear-gradient(135deg,#f8fafc,#eef2ff);display:flex;align-items:center;gap:12px">
+        <span style="font-size:18px">🔗</span>
+        <div>
+          <div style="font-weight:700;font-size:14px">Architecture des données Akuiteo</div>
+          <div style="font-size:11px;color:var(--gray-500)">Cliquez sur une table pour voir ses champs • Les lignes montrent les relations entre entités</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:12px;font-size:11px">
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3B82F6;margin-right:4px"></span>CRM</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#10B981;margin-right:4px"></span>Ventes</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8B5CF6;margin-right:4px"></span>Projets</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#F59E0B;margin-right:4px"></span>RH</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EF4444;margin-right:4px"></span>Achats</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EC4899;margin-right:4px"></span>Support</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#06B6D4;margin-right:4px"></span>Finance</span>
+        </div>
+      </div>
+      <div id="svgWrapper" style="overflow:auto;padding:10px;position:relative">
+        <svg id="schemaSvg" width="1160" height="1050" viewBox="0 0 1160 1050" xmlns="http://www.w3.org/2000/svg" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"></svg>
+      </div>
+    </div>
+
+    <!-- Table detail panel -->
+    <div id="tableDetailPanel" class="hidden" style="background:#fff;border-radius:14px;border:1px solid var(--gray-200);overflow:hidden;margin-bottom:24px">
+      <div id="tableDetailHeader" style="padding:14px 20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:10px;border-left:4px solid var(--indigo-500)">
+        <span id="tableDetailIcon" style="font-size:20px">📋</span>
+        <div>
+          <div id="tableDetailName" style="font-weight:700;font-size:15px"></div>
+          <div id="tableDetailDesc" style="font-size:12px;color:var(--gray-500)"></div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px" id="tableDetailBadges"></div>
+        <button onclick="document.getElementById('tableDetailPanel').classList.add('hidden')" style="background:none;border:none;font-size:18px;color:var(--gray-400);cursor:pointer;padding:4px">✕</button>
+      </div>
+      <div id="tableDetailBody" style="padding:16px 20px"></div>
+    </div>
+
+    <!-- Entities summary -->
+    <div id="entitySummary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+  </div>
+  <!-- END SCHEMA VIEW -->
+    <div class="setup-card">
+      <div class="setup-header">
+        <h2>🔌 Guide de connexion aux API Akuiteo</h2>
+        <p>Suivez ces étapes pour vous connecter et effectuer vos premiers appels API</p>
+      </div>
+      <div style="padding:24px">
+        <div class="info-box">
+          <h3>ℹ️ Informations clés</h3>
+          <div class="info-grid">
+            <div><span>Protocole :</span> HTTPS uniquement</div>
+            <div><span>Format :</span> JSON (application/json)</div>
+            <div><span>Auth :</span> Basic Auth (login:password en Base64)</div>
+            <div><span>Host cloud :</span> api.akuiteo.fr</div>
+            <div><span>Date format :</span> RFC 3339 (yyyy-MM-dd'T'HH:mm:ss.SSSXXX)</div>
+            <div><span>Version :</span> API v2.0.0 (Akuiteo v5)</div>
+          </div>
+        </div>
+        <div id="setupSteps"></div>
+      </div>
+    </div>
+    <div class="schema-card">
+      <div class="schema-header">📐 Types de données (Schemas)</div>
+      <table class="schema-table">
+        <thead><tr><th>Type</th><th>Description</th><th>Exemple</th></tr></thead>
+        <tbody>
+          <tr><td class="schema-type">string (date-time)</td><td>Date au format RFC 3339</td><td style="font-family:monospace;color:var(--gray-500)">2020-11-29T08:10:10+200</td></tr>
+          <tr><td class="schema-type">number</td><td>Tout nombre</td><td style="font-family:monospace;color:var(--gray-500)">42</td></tr>
+          <tr><td class="schema-type">number (double)</td><td>Nombre flottant double précision</td><td style="font-family:monospace;color:var(--gray-500)">10.8</td></tr>
+          <tr><td class="schema-type">number (float)</td><td>Nombre flottant</td><td style="font-family:monospace;color:var(--gray-500)">10.8</td></tr>
+          <tr><td class="schema-type">integer (int64)</td><td>Entier signé 64 bits (long)</td><td style="font-family:monospace;color:var(--gray-500)">10</td></tr>
+          <tr><td class="schema-type">boolean</td><td>true ou false uniquement</td><td style="font-family:monospace;color:var(--gray-500)">true</td></tr>
+          <tr><td class="schema-type">string</td><td>Chaîne de caractères</td><td style="font-family:monospace;color:var(--gray-500)">"ABC123"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TEST VIEW -->
+  <div id="view-test" class="hidden">
+    <div class="test-card">
+      <div class="test-header">
+        <h2>🧪 Testeur d'API Akuiteo</h2>
+        <p>Configurez et générez vos appels API pour tester en lecture et écriture</p>
+      </div>
+      <div class="test-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">URL de base de l'instance</label><input type="text" class="form-input" id="testBaseUrl" placeholder="https://votre-instance.akuiteo.fr" oninput="updateCodeBlocks()"></div>
+          <div class="form-group"><label class="form-label">Login</label><input type="text" class="form-input" id="testLogin" placeholder="votre-login" oninput="updateCodeBlocks()"></div>
+          <div class="form-group"><label class="form-label">Mot de passe</label><input type="password" class="form-input" id="testPassword" placeholder="••••••••" oninput="updateCodeBlocks()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group w28">
+            <label class="form-label">Méthode</label>
+            <select class="form-select" id="testMethod" onchange="onMethodChange()">
+              <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option>
+            </select>
+          </div>
+          <div class="form-group flex1">
+            <label class="form-label">Endpoint (chemin complet)</label>
+            <input type="text" class="form-input mono" id="testEndpoint" placeholder="/akuiteo/rest/workforce/employees" oninput="updateCodeBlocks()">
+          </div>
+        </div>
+        <div class="form-group" id="bodyGroup" style="display:none">
+          <label class="form-label">Body (JSON)</label>
+          <textarea class="form-textarea" id="testBody" placeholder='{ "code": "CLI001", "name": "Mon Client" }' oninput="updateCodeBlocks()"></textarea>
+        </div>
+
+        <!-- Quick select -->
+        <div>
+          <div class="quick-label">⚡ Sélection rapide d'un endpoint</div>
+          <div class="quick-chips" id="quickChips"></div>
+        </div>
+
+        <!-- cURL -->
+        <div class="code-section">
+          <div class="code-header"><label>📋 Commande cURL générée</label><button class="copy-btn" onclick="copyCode('curlBlock')">Copier</button></div>
+          <div class="code-block curl" id="curlBlock"></div>
+        </div>
+
+        <!-- JavaScript -->
+        <div class="code-section">
+          <div class="code-header"><label>📋 Code JavaScript (fetch)</label><button class="copy-btn" onclick="copyCode('jsBlock')">Copier</button></div>
+          <div class="code-block js" id="jsBlock"></div>
+        </div>
+
+        <!-- Python -->
+        <div class="code-section">
+          <div class="code-header"><label>🐍 Code Python (requests)</label><button class="copy-btn" onclick="copyCode('pyBlock')">Copier</button></div>
+          <div class="code-block py" id="pyBlock"></div>
+        </div>
+
+        <div class="warning-box">
+          <strong>⚠️ Important :</strong> Les appels en écriture (POST, PUT, DELETE) modifient réellement les données dans Akuiteo.
+          Testez d'abord en lecture (GET), et utilisez un environnement de test si disponible.
+          Les identifiants ne sont pas stockés — ils restent uniquement dans votre navigateur le temps de la session.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  Documentation basée sur l'API Akuiteo v5 • Host: api.akuiteo.fr • Auth: Basic Auth (HTTPS) • Format: JSON<br>
+  <a href="https://docs.akuiteo.fr" target="_blank">docs.akuiteo.fr</a> •
+  <a href="https://www.akuiteo.com/glossaire-erp/api" target="_blank">Documentation officielle</a>
+</div>
+
+<script>
+// ======================== DATA ========================
+const API_DOMAINS = [
+  {id:"crm",name:"CRM",icon:"👥",color:"#3B82F6",basePath:"/akuiteo/rest/crm",
+   description:"Gestion de la relation client : contacts, clients, prospects, opportunités",
+   tags:[
+    {name:"Customers",desc:"Gestion des clients",endpoints:[
+      {method:"GET",path:"/customers",desc:"Lister les clients",mode:"read"},
+      {method:"GET",path:"/customers/{id}",desc:"Détail d'un client",mode:"read"},
+      {method:"POST",path:"/customers",desc:"Créer un client",mode:"write"},
+      {method:"PUT",path:"/customers/{id}",desc:"Modifier un client",mode:"write"}
+    ]},
+    {name:"Contacts",desc:"Gestion des contacts",endpoints:[
+      {method:"GET",path:"/contacts",desc:"Lister les contacts",mode:"read"},
+      {method:"GET",path:"/contacts/{id}",desc:"Détail d'un contact",mode:"read"},
+      {method:"POST",path:"/contacts",desc:"Créer un contact site client",mode:"write"},
+      {method:"PUT",path:"/contacts/{id}",desc:"Modifier un contact site client",mode:"write"}
+    ]},
+    {name:"Prospects",desc:"Gestion des prospects",endpoints:[
+      {method:"GET",path:"/prospects",desc:"Lister les prospects",mode:"read"},
+      {method:"POST",path:"/prospects",desc:"Créer un prospect",mode:"write"}
+    ]},
+    {name:"Opportunities",desc:"Gestion des opportunités commerciales",endpoints:[
+      {method:"GET",path:"/opportunities",desc:"Lister les opportunités",mode:"read"},
+      {method:"POST",path:"/opportunities",desc:"Créer une opportunité",mode:"write"},
+      {method:"PUT",path:"/opportunities/{id}",desc:"Modifier une opportunité",mode:"write"}
+    ]}
+   ]},
+  {id:"sales",name:"Ventes",icon:"💰",color:"#10B981",basePath:"/akuiteo/rest/sales",
+   description:"Gestion commerciale : devis, commandes clients, factures clients",
+   tags:[
+    {name:"Quotations",desc:"Gestion des devis",endpoints:[
+      {method:"GET",path:"/quotations",desc:"Lister les devis",mode:"read"},
+      {method:"GET",path:"/quotations/{id}",desc:"Détail d'un devis",mode:"read"},
+      {method:"POST",path:"/quotations",desc:"Créer un devis client",mode:"write"},
+      {method:"PUT",path:"/quotations/{id}",desc:"Réviser un devis client",mode:"write"},
+      {method:"PUT",path:"/quotations/{id}/validators",desc:"Modifier les valideurs du devis",mode:"write"}
+    ]},
+    {name:"Sales Orders",desc:"Commandes clients",endpoints:[
+      {method:"GET",path:"/orders",desc:"Lister les commandes clients",mode:"read"},
+      {method:"GET",path:"/orders/{id}",desc:"Détail d'une commande",mode:"read"},
+      {method:"POST",path:"/orders",desc:"Créer une commande client",mode:"write"}
+    ]},
+    {name:"Sales Invoices",desc:"Factures clients",endpoints:[
+      {method:"GET",path:"/invoices",desc:"Lister les factures clients",mode:"read"},
+      {method:"GET",path:"/invoices/{id}",desc:"Détail d'une facture",mode:"read"}
+    ]}
+   ]},
+  {id:"project",name:"Affaires / Projets",icon:"📋",color:"#8B5CF6",basePath:"/akuiteo/rest/project",
+   description:"Gestion des affaires, lots, sous-lots, tâches et planning",
+   tags:[
+    {name:"Projects",desc:"Gestion des affaires",endpoints:[
+      {method:"GET",path:"/projects",desc:"Lister les affaires",mode:"read"},
+      {method:"GET",path:"/projects/{id}",desc:"Détail d'une affaire",mode:"read"},
+      {method:"POST",path:"/projects",desc:"Créer une affaire",mode:"write"},
+      {method:"PUT",path:"/projects/{id}",desc:"Modifier une affaire",mode:"write"},
+      {method:"PUT",path:"/projects/{id}/state",desc:"Modifier le code état d'une affaire",mode:"write"},
+      {method:"PUT",path:"/projects/{id}/customer",desc:"Modifier le client d'une affaire",mode:"write"}
+    ]},
+    {name:"Phases",desc:"Gestion des lots (phases)",endpoints:[
+      {method:"GET",path:"/projects/{id}/phases",desc:"Lister les lots d'une affaire",mode:"read"},
+      {method:"POST",path:"/projects/{id}/phases",desc:"Créer un lot",mode:"write"}
+    ]},
+    {name:"Sub-Phases",desc:"Gestion des sous-lots",endpoints:[
+      {method:"GET",path:"/projects/{id}/phases/{phaseId}/subphases",desc:"Lister les sous-lots",mode:"read"},
+      {method:"POST",path:"/projects/{id}/phases/{phaseId}/subphases",desc:"Créer un sous-lot",mode:"write"}
+    ]},
+    {name:"Tasks",desc:"Gestion des tâches",endpoints:[
+      {method:"GET",path:"/projects/{id}/tasks",desc:"Lister les tâches d'une affaire",mode:"read"},
+      {method:"POST",path:"/projects/{id}/tasks",desc:"Créer une tâche",mode:"write"},
+      {method:"PUT",path:"/projects/{id}/tasks/{taskId}",desc:"Modifier une tâche",mode:"write"},
+      {method:"DELETE",path:"/projects/{id}/tasks/{taskId}",desc:"Supprimer une tâche",mode:"write"},
+      {method:"PUT",path:"/tasks/{taskId}/transfer",desc:"Transférer une tâche",mode:"write"}
+    ]}
+   ]},
+  {id:"workforce",name:"Workforce / RH",icon:"🧑‍💼",color:"#F59E0B",basePath:"/akuiteo/rest/workforce",
+   description:"Gestion des collaborateurs, temps passés, absences, notes de frais, plannings",
+   tags:[
+    {name:"Employees",desc:"Gestion des collaborateurs",endpoints:[
+      {method:"GET",path:"/employees",desc:"Lister les collaborateurs",mode:"read"},
+      {method:"GET",path:"/employees/{id}",desc:"Détail d'un collaborateur",mode:"read"},
+      {method:"GET",path:"/employees/{id}/manager",desc:"Responsable hiérarchique",mode:"read"}
+    ]},
+    {name:"Timerecordings",desc:"Saisie des temps passés",endpoints:[
+      {method:"GET",path:"/employees/{id}/timerecordings",desc:"Lister les temps passés",mode:"read"},
+      {method:"POST",path:"/employees/{id}/timerecordings",desc:"Saisir du temps",mode:"write"},
+      {method:"PUT",path:"/employees/{id}/timerecordings/{trId}",desc:"Modifier un temps passé",mode:"write"},
+      {method:"DELETE",path:"/employees/{id}/timerecordings/{trId}",desc:"Supprimer un temps passé",mode:"write"}
+    ]},
+    {name:"Leaves",desc:"Gestion des absences",endpoints:[
+      {method:"GET",path:"/employees/{id}/leaves",desc:"Lister les absences",mode:"read"},
+      {method:"POST",path:"/employees/{id}/leaves",desc:"Créer une demande d'absence",mode:"write"}
+    ]},
+    {name:"Expenses",desc:"Notes de frais",endpoints:[
+      {method:"GET",path:"/employees/{id}/expenses",desc:"Lister les notes de frais",mode:"read"},
+      {method:"GET",path:"/employees/{id}/expenses/{expId}",desc:"Détail d'une note de frais",mode:"read"},
+      {method:"POST",path:"/employees/{id}/expenses",desc:"Créer une note de frais",mode:"write"},
+      {method:"PUT",path:"/expenses/{expId}/validate",desc:"Valider une note de frais",mode:"write"}
+    ]},
+    {name:"Schedules",desc:"Plannings collaborateurs",endpoints:[
+      {method:"GET",path:"/employees/{id}/schedules",desc:"Consulter le planning",mode:"read"}
+    ]},
+    {name:"Custom Requests",desc:"Demandes internes",endpoints:[
+      {method:"GET",path:"/custom-requests",desc:"Lister les demandes internes",mode:"read"},
+      {method:"POST",path:"/custom-requests",desc:"Créer une demande interne",mode:"write"}
+    ]}
+   ]},
+  {id:"purchase",name:"Achats",icon:"🛒",color:"#EF4444",basePath:"/akuiteo/rest/purchase",
+   description:"Gestion des achats : fournisseurs, commandes fournisseurs, factures fournisseurs",
+   tags:[
+    {name:"Suppliers",desc:"Gestion des fournisseurs",endpoints:[
+      {method:"GET",path:"/suppliers",desc:"Lister les fournisseurs",mode:"read"},
+      {method:"GET",path:"/suppliers/{id}",desc:"Détail d'un fournisseur",mode:"read"},
+      {method:"POST",path:"/suppliers",desc:"Créer un fournisseur",mode:"write"}
+    ]},
+    {name:"Purchase Orders",desc:"Commandes fournisseurs",endpoints:[
+      {method:"GET",path:"/purchase-orders",desc:"Lister les commandes fournisseurs",mode:"read"},
+      {method:"POST",path:"/purchase-orders",desc:"Créer une commande fournisseur",mode:"write"}
+    ]},
+    {name:"Purchase Invoices",desc:"Factures fournisseurs",endpoints:[
+      {method:"GET",path:"/purchase-invoices",desc:"Lister les factures fournisseurs",mode:"read"}
+    ]}
+   ]},
+  {id:"support",name:"Support / Helpdesk",icon:"🎧",color:"#EC4899",basePath:"/akuiteo/rest/support",
+   description:"Gestion du support client : demandes, interventions, contrats de maintenance",
+   tags:[
+    {name:"Issues",desc:"Gestion des demandes support",endpoints:[
+      {method:"GET",path:"/issues",desc:"Lister les demandes",mode:"read"},
+      {method:"GET",path:"/issues/{id}",desc:"Détail d'une demande",mode:"read"},
+      {method:"POST",path:"/issues",desc:"Créer une demande",mode:"write"},
+      {method:"PUT",path:"/issues/{id}",desc:"Modifier une demande",mode:"write"}
+    ]},
+    {name:"Tasks (Interventions)",desc:"Interventions sur les demandes",endpoints:[
+      {method:"GET",path:"/issues/{id}/tasks",desc:"Lister les interventions",mode:"read"},
+      {method:"POST",path:"/issues/{id}/tasks",desc:"Créer une intervention",mode:"write"}
+    ]},
+    {name:"Contracts",desc:"Contrats de maintenance",endpoints:[
+      {method:"GET",path:"/contracts",desc:"Lister les contrats",mode:"read"},
+      {method:"GET",path:"/contracts/{id}",desc:"Détail d'un contrat",mode:"read"}
+    ]},
+    {name:"References",desc:"Données de référence support",endpoints:[
+      {method:"GET",path:"/severities",desc:"Lister les gravités",mode:"read"},
+      {method:"GET",path:"/criticalities",desc:"Lister les criticités",mode:"read"},
+      {method:"GET",path:"/domains",desc:"Lister les domaines",mode:"read"}
+    ]}
+   ]},
+  {id:"billing",name:"Facturation",icon:"🧾",color:"#06B6D4",basePath:"/akuiteo/rest/billing",
+   description:"Facturation, règlements, relances, tableaux de facturation",
+   tags:[
+    {name:"Invoices",desc:"Gestion des factures",endpoints:[
+      {method:"GET",path:"/invoices",desc:"Lister les factures",mode:"read"},
+      {method:"GET",path:"/invoices/{id}",desc:"Détail d'une facture",mode:"read"}
+    ]},
+    {name:"Payments",desc:"Règlements",endpoints:[
+      {method:"GET",path:"/payments",desc:"Lister les règlements",mode:"read"},
+      {method:"POST",path:"/payments",desc:"Enregistrer un règlement",mode:"write"}
+    ]},
+    {name:"Billing Tables",desc:"Tableaux de facturation",endpoints:[
+      {method:"GET",path:"/billing-tables",desc:"Consulter les tableaux de facturation",mode:"read"}
+    ]}
+   ]},
+  {id:"dashboard",name:"Dashboard / TBI",icon:"📊",color:"#84CC16",basePath:"/akuiteo/rest/dashboard",
+   description:"Tableaux de bord interactifs et indicateurs",
+   tags:[
+    {name:"Dashboard",desc:"Gestion du tableau de bord",endpoints:[
+      {method:"GET",path:"/",desc:"Récupérer le dashboard",mode:"read"}
+    ]}
+   ]},
+  {id:"accounting",name:"Comptabilité",icon:"📚",color:"#6366F1",basePath:"/akuiteo/rest/accounting",
+   description:"Exports comptables, écritures, plan comptable, rapprochements",
+   tags:[
+    {name:"Accounting Entries",desc:"Écritures comptables",endpoints:[
+      {method:"GET",path:"/entries",desc:"Lister les écritures",mode:"read"},
+      {method:"GET",path:"/exports",desc:"Exports comptables",mode:"read"}
+    ]},
+    {name:"Chart of Accounts",desc:"Plan comptable",endpoints:[
+      {method:"GET",path:"/accounts",desc:"Consulter le plan comptable",mode:"read"}
+    ]}
+   ]},
+  {id:"documents",name:"Documents / GED",icon:"📁",color:"#A855F7",basePath:"/akuiteo/rest/documents",
+   description:"Gestion électronique des documents",
+   tags:[
+    {name:"Documents",desc:"Gestion des documents",endpoints:[
+      {method:"GET",path:"/documents",desc:"Lister les documents",mode:"read"},
+      {method:"GET",path:"/documents/{id}",desc:"Télécharger un document",mode:"read"},
+      {method:"POST",path:"/documents",desc:"Déposer un document",mode:"write"},
+      {method:"DELETE",path:"/documents/{id}",desc:"Supprimer un document",mode:"write"}
+    ]}
+   ]},
+  {id:"legacy",name:"Legacy (SOAP/REST)",icon:"🔧",color:"#78716C",basePath:"/akuiteo/rest/legacy",
+   description:"API historiques (ancien format SOAP/REST) : affaires, clients, contacts, devis, support",
+   tags:[
+    {name:"AffairePublique",desc:"Gestion des affaires (legacy)",endpoints:[
+      {method:"POST",path:"/affaires/creer",desc:"Créer une affaire",mode:"write"},
+      {method:"PUT",path:"/affaires/modifier",desc:"Modifier une affaire",mode:"write"},
+      {method:"PUT",path:"/affaires/modifierCodeEtat",desc:"Modifier le code état",mode:"write"},
+      {method:"POST",path:"/affaires/creerLot",desc:"Créer un lot",mode:"write"},
+      {method:"POST",path:"/affaires/creerSousLot",desc:"Créer un sous-lot",mode:"write"},
+      {method:"POST",path:"/affaires/creerTache",desc:"Créer une tâche",mode:"write"},
+      {method:"PUT",path:"/affaires/modifierTache",desc:"Modifier une tâche",mode:"write"},
+      {method:"DELETE",path:"/affaires/supprimerTache",desc:"Supprimer une tâche",mode:"write"},
+      {method:"PUT",path:"/affaires/transfererTache",desc:"Transférer une tâche",mode:"write"}
+    ]},
+    {name:"ClientPublique",desc:"Gestion des clients (legacy)",endpoints:[
+      {method:"POST",path:"/clients/creer",desc:"Créer un client",mode:"write"},
+      {method:"PUT",path:"/clients/modifier",desc:"Modifier un client",mode:"write"},
+      {method:"GET",path:"/clients/responsable",desc:"Responsable du client",mode:"read"}
+    ]},
+    {name:"ContactPubliqueRest",desc:"Contacts (legacy)",endpoints:[
+      {method:"POST",path:"/contacts/creer",desc:"Créer un contact",mode:"write"},
+      {method:"PUT",path:"/contacts/modifier",desc:"Modifier un contact",mode:"write"},
+      {method:"GET",path:"/contacts/{id}",desc:"Charger un contact",mode:"read"}
+    ]},
+    {name:"DevisPublique",desc:"Devis (legacy)",endpoints:[
+      {method:"POST",path:"/devis/creer",desc:"Créer un devis",mode:"write"},
+      {method:"PUT",path:"/devis/reviser",desc:"Réviser un devis",mode:"write"},
+      {method:"PUT",path:"/devis/valideurs",desc:"Modifier les valideurs",mode:"write"}
+    ]},
+    {name:"SupportPublique",desc:"Support (legacy)",endpoints:[
+      {method:"GET",path:"/support/interventions/{id}",desc:"Charger une intervention",mode:"read"},
+      {method:"GET",path:"/support/contacts",desc:"Lister les contacts support",mode:"read"},
+      {method:"GET",path:"/support/criticites",desc:"Lister les criticités",mode:"read"},
+      {method:"GET",path:"/support/gravites",desc:"Lister les gravités",mode:"read"},
+      {method:"GET",path:"/support/domaines",desc:"Lister les domaines",mode:"read"}
+    ]}
+   ]}
+];
+
+const SETUP_STEPS = [
+  {step:1,title:"Obtenir vos identifiants API",
+   detail:"Contactez votre administrateur Akuiteo ou le support technique pour obtenir un compte API avec les droits appropriés.\nL'authentification utilise Basic Auth (identifiant + mot de passe).",
+   tip:"Assurez-vous d'avoir un compte avec les permissions suffisantes pour les domaines que vous souhaitez utiliser."},
+  {step:2,title:"Identifier votre URL de base",
+   detail:"L'URL de base de l'API dépend de votre instance Akuiteo.\nLe format standard est :\nhttps://[votre-instance].akuiteo.fr/akuiteo/rest/[domaine]",
+   tip:"Pour le cloud Akuiteo, l'host est généralement api.akuiteo.fr. Pour un hébergement on-premise, c'est l'URL de votre serveur."},
+  {step:3,title:"Configurer l'authentification Basic Auth",
+   detail:"Chaque requête doit inclure un header Authorization\navec vos identifiants encodés en Base64 :\n\nAuthorization: Basic [base64(login:password)]",
+   tip:"Ne jamais partager vos identifiants en clair. Utilisez des variables d'environnement dans vos scripts."},
+  {step:4,title:"Premier appel de test (GET)",
+   detail:"Testez votre connexion avec un appel simple en lecture :\n\nGET https://[instance]/akuiteo/rest/workforce/employees\n\nHeaders :\n  Authorization: Basic [token]\n  Accept: application/json",
+   tip:"Utilisez Postman, cURL ou l'outil de test ci-dessous pour valider votre connexion."},
+  {step:5,title:"Tester un appel en écriture (POST/PUT)",
+   detail:"Une fois la lecture validée, testez un appel en écriture :\n\nPOST https://[instance]/akuiteo/rest/crm/contacts\n\nHeaders :\n  Authorization: Basic [token]\n  Content-Type: application/json\n\nBody : { ... }",
+   tip:"Commencez toujours par tester en lecture avant l'écriture. Utilisez un environnement de test si disponible."},
+  {step:6,title:"Gérer les erreurs et réponses",
+   detail:"Les réponses suivent les codes HTTP standards :\n\n• 200 : Succès\n• 201 : Créé avec succès\n• 400 : Requête invalide\n• 401 : Non authentifié\n• 403 : Non autorisé\n• 404 : Ressource non trouvée\n• 500 : Erreur serveur",
+   tip:"Vérifiez le corps de la réponse en cas d'erreur, Akuiteo y inclut souvent des détails sur le problème."}
+];
+
+// ======================== STATE ========================
+let currentView = 'map';
+let selectedDomain = null;
+let filterMode = 'all';
+let expandedTags = {};
+let activeSetupStep = -1;
+
+// ======================== HELPERS ========================
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function methodBadge(m) { return `<span class="method-badge ${m}">${m}</span>`; }
+function modeBadge(mode) {
+  return mode === 'read'
+    ? '<span class="mode-badge read">📖 Lecture</span>'
+    : '<span class="mode-badge write">✏️ Écriture</span>';
+}
+
+function countEp(domain, mode) {
+  let c = 0;
+  domain.tags.forEach(t => t.endpoints.forEach(e => { if(!mode||mode==='all'||e.mode===mode) c++; }));
+  return c;
+}
+
+// ======================== VIEWS ========================
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['map','schema','setup','test'][i] === view);
+  });
+  ['map','schema','setup','test'].forEach(v => {
+    document.getElementById('view-'+v).classList.toggle('hidden', v !== view);
+  });
+  if(view === 'test') updateCodeBlocks();
+  if(view === 'schema') renderSchema();
+}
+
+// ======================== MAP VIEW ========================
+function renderStats() {
+  let total=0, read=0, write=0;
+  API_DOMAINS.forEach(d => { total += countEp(d); read += countEp(d,'read'); write += countEp(d,'write'); });
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-read').textContent = read;
+  document.getElementById('stat-write').textContent = write;
+}
+
+function renderDomainGrid() {
+  const grid = document.getElementById('domainGrid');
+  grid.innerHTML = API_DOMAINS.map(d => `
+    <div class="domain-card ${selectedDomain===d.id?'selected':''}" onclick="toggleDomain('${d.id}')">
+      <div class="card-header">
+        <div class="card-icon">${d.icon}</div>
+        <div><div class="card-name">${d.name}</div><code class="card-path">${d.basePath}</code></div>
+      </div>
+      <div class="card-desc">${d.description}</div>
+      <div class="card-badges">
+        <span class="card-badge read">${countEp(d,'read')} lecture</span>
+        <span class="card-badge write">${countEp(d,'write')} écriture</span>
+        <span class="card-badge groups">${d.tags.length} groupes</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleDomain(id) {
+  selectedDomain = selectedDomain === id ? null : id;
+  document.getElementById('resetBtn').classList.toggle('hidden', !selectedDomain);
+  renderDomainGrid();
+  renderEndpoints();
+}
+
+function resetDomainFilter() {
+  selectedDomain = null;
+  document.getElementById('resetBtn').classList.add('hidden');
+  renderDomainGrid();
+  renderEndpoints();
+}
+
+function setFilterMode(mode, btn) {
+  filterMode = mode;
+  document.querySelectorAll('.filter-group .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderEndpoints();
+}
+
+function applyFilters() { renderEndpoints(); }
+
+function renderEndpoints() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const container = document.getElementById('endpointSections');
+  let html = '';
+
+  API_DOMAINS.forEach(domain => {
+    if (selectedDomain && domain.id !== selectedDomain) return;
+
+    // Check if domain matches search
+    const domainMatch = !search || domain.name.toLowerCase().includes(search) || domain.description.toLowerCase().includes(search);
+
+    let tagsHtml = '';
+    let hasVisibleTag = false;
+
+    domain.tags.forEach((tag, ti) => {
+      const tagKey = domain.id + '-' + ti;
+      const isExpanded = expandedTags[tagKey] !== false;
+
+      const filtered = tag.endpoints.filter(ep => {
+        if (filterMode !== 'all' && ep.mode !== filterMode) return false;
+        if (search && !domainMatch) {
+          return ep.desc.toLowerCase().includes(search) || ep.path.toLowerCase().includes(search);
+        }
+        return true;
+      });
+
+      if (filtered.length === 0 && !domainMatch) return;
+      if (filtered.length === 0) return;
+      hasVisibleTag = true;
+
+      let epRows = '';
+      if (isExpanded) {
+        filtered.forEach(ep => {
+          epRows += `<tr class="ep-row">
+            <td style="width:70px">${methodBadge(ep.method)}</td>
+            <td class="ep-path">${esc(ep.path)}</td>
+            <td class="ep-desc">${esc(ep.desc)}</td>
+            <td style="width:100px">${modeBadge(ep.mode)}</td>
+            <td style="width:80px"><button class="test-btn" onclick="loadEndpointToTest('${domain.basePath}','${ep.path}','${ep.method}')">Tester →</button></td>
+          </tr>`;
+        });
+      }
+
+      tagsHtml += `
+        <div>
+          <button class="tag-header" onclick="toggleTag('${tagKey}')">
+            <span class="tag-arrow">${isExpanded ? '▼' : '▶'}</span>
+            <span class="tag-name">${esc(tag.name)}</span>
+            <span class="tag-desc">— ${esc(tag.desc)}</span>
+            <span class="tag-count">${filtered.length} endpoints</span>
+          </button>
+          ${isExpanded ? `<table class="endpoints-table"><tbody>${epRows}</tbody></table>` : ''}
+        </div>`;
+    });
+
+    if (!hasVisibleTag && !domainMatch) return;
+    if (!hasVisibleTag) return;
+
+    html += `
+      <div class="domain-section">
+        <div class="domain-header" style="border-left-color:${domain.color}">
+          <span class="domain-header-icon">${domain.icon}</span>
+          <div>
+            <div class="domain-header-name">${domain.name}</div>
+            <span class="domain-header-path">Host: api.akuiteo.fr | BasePath: ${domain.basePath}</span>
+          </div>
+          <span class="domain-header-auth">Auth: Basic Auth (HTTPS)</span>
+        </div>
+        ${tagsHtml}
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function toggleTag(key) {
+  expandedTags[key] = expandedTags[key] === false ? true : (expandedTags[key] === undefined ? false : !expandedTags[key]);
+  renderEndpoints();
+}
+
+// ======================== SETUP VIEW ========================
+function renderSetupSteps() {
+  const container = document.getElementById('setupSteps');
+  container.innerHTML = SETUP_STEPS.map((s, i) => `
+    <div>
+      <button class="step-btn ${activeSetupStep===i?'active':''}" onclick="toggleSetupStep(${i})">
+        <div class="step-num">${s.step}</div>
+        <span class="step-title">${s.title}</span>
+        <span class="step-arrow">${activeSetupStep===i?'▼':'▶'}</span>
+      </button>
+      ${activeSetupStep===i ? `
+        <div class="step-detail">
+          <div class="step-code">${esc(s.detail)}</div>
+          <div class="step-tip">💡 <strong>Astuce :</strong> ${s.tip}</div>
+        </div>` : ''}
+    </div>
+  `).join('');
+}
+
+function toggleSetupStep(i) {
+  activeSetupStep = activeSetupStep === i ? -1 : i;
+  renderSetupSteps();
+}
+
+// ======================== TEST VIEW ========================
+function getTestValues() {
+  return {
+    baseUrl: document.getElementById('testBaseUrl').value || 'https://[instance].akuiteo.fr',
+    login: document.getElementById('testLogin').value || 'LOGIN',
+    password: document.getElementById('testPassword').value || 'PASSWORD',
+    method: document.getElementById('testMethod').value,
+    endpoint: document.getElementById('testEndpoint').value || '/akuiteo/rest/workforce/employees',
+    body: document.getElementById('testBody').value
+  };
+}
+
+function onMethodChange() {
+  const m = document.getElementById('testMethod').value;
+  document.getElementById('bodyGroup').style.display = (m==='GET'||m==='DELETE') ? 'none' : '';
+  updateCodeBlocks();
+}
+
+function updateCodeBlocks() {
+  const v = getTestValues();
+  const url = v.baseUrl + v.endpoint;
+  const isWrite = v.method !== 'GET';
+
+  // cURL
+  const auth = `  -u "${v.login}:${v.password}"`;
+  const ct = isWrite ? `\n  -H "Content-Type: application/json"` : '';
+  const bd = (isWrite && v.body) ? `\n  -d '${v.body}'` : '';
+  document.getElementById('curlBlock').textContent =
+    `curl -X ${v.method} \\\n${auth} \\\n  -H "Accept: application/json"${ct} \\\n  "${url}"${bd}`;
+
+  // JS
+  const jsHeaders = isWrite
+    ? `    "Authorization": "Basic " + btoa("${v.login}:${v.password}"),\n    "Accept": "application/json",\n    "Content-Type": "application/json"`
+    : `    "Authorization": "Basic " + btoa("${v.login}:${v.password}"),\n    "Accept": "application/json"`;
+  const jsBody = (isWrite && v.body) ? `,\n  body: JSON.stringify(${v.body})` : '';
+  document.getElementById('jsBlock').textContent =
+`const response = await fetch("${url}", {
+  method: "${v.method}",
+  headers: {
+${jsHeaders}
+  }${jsBody}
+});
+const data = await response.json();
+console.log(data);`;
+
+  // Python
+  const pyHeaders = isWrite
+    ? `{"Accept": "application/json", "Content-Type": "application/json"}`
+    : `{"Accept": "application/json"}`;
+  const pyPayload = (isWrite && v.body) ? `payload = ${v.body}\n` : '';
+  const pyJson = (isWrite && v.body) ? ', json=payload' : '';
+  document.getElementById('pyBlock').textContent =
+`import requests
+
+url = "${url}"
+auth = ("${v.login}", "${v.password}")
+headers = ${pyHeaders}
+${pyPayload}
+response = requests.${v.method.toLowerCase()}(url, auth=auth, headers=headers${pyJson})
+print(response.status_code)
+print(response.json())`;
+}
+
+let openQuickChip = null;
+
+function renderQuickChips() {
+  const container = document.getElementById('quickChips');
+  container.innerHTML = API_DOMAINS.map((d, di) => {
+    let items = '';
+    d.tags.forEach(t => t.endpoints.forEach(ep => {
+      items += `<button class="quick-ep-btn" onclick="event.stopPropagation(); pickEndpoint('${d.basePath}','${esc(ep.path)}','${ep.method}')">
+        ${methodBadge(ep.method)} 
+        <span class="quick-ep-path">${esc(ep.path)}</span>
+        <span class="quick-ep-desc">${esc(ep.desc)}</span>
+      </button>`;
+    }));
+    return `<div class="quick-chip" id="qchip-${di}" onclick="event.stopPropagation(); toggleQuickChip(${di})">
+      ${d.icon} ${d.name}
+      <div class="quick-dropdown" id="qdrop-${di}">${items}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleQuickChip(idx) {
+  // Close previously open
+  if(openQuickChip !== null && openQuickChip !== idx) {
+    const prevChip = document.getElementById('qchip-'+openQuickChip);
+    const prevDrop = document.getElementById('qdrop-'+openQuickChip);
+    if(prevChip) prevChip.classList.remove('open');
+    if(prevDrop) prevDrop.classList.remove('open');
+  }
+  const chip = document.getElementById('qchip-'+idx);
+  const drop = document.getElementById('qdrop-'+idx);
+  const isOpen = drop.classList.contains('open');
+  chip.classList.toggle('open', !isOpen);
+  drop.classList.toggle('open', !isOpen);
+  openQuickChip = isOpen ? null : idx;
+}
+
+function closeAllQuickChips() {
+  if(openQuickChip !== null) {
+    const chip = document.getElementById('qchip-'+openQuickChip);
+    const drop = document.getElementById('qdrop-'+openQuickChip);
+    if(chip) chip.classList.remove('open');
+    if(drop) drop.classList.remove('open');
+    openQuickChip = null;
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function() { closeAllQuickChips(); });
+
+function pickEndpoint(basePath, path, method) {
+  closeAllQuickChips();
+  document.getElementById('testMethod').value = method;
+  document.getElementById('testEndpoint').value = basePath + path;
+  onMethodChange();
+  // Scroll to the cURL block so user sees the result
+  document.getElementById('curlBlock').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function loadEndpointToTest(basePath, path, method) {
+  document.getElementById('testMethod').value = method;
+  document.getElementById('testEndpoint').value = basePath + path;
+  onMethodChange();
+  switchView('test');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function copyCode(blockId) {
+  const text = document.getElementById(blockId).textContent;
+  navigator.clipboard && navigator.clipboard.writeText(text);
+}
+
+// ======================== SCHEMA / DATABASE VIEW ========================
+const DB_TABLES = [
+  // CRM domain
+  {id:"client",name:"Client",icon:"👤",domain:"CRM",color:"#3B82F6",x:60,y:40,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"name",type:"string"},
+    {name:"address",type:"string"},{name:"email",type:"string"},{name:"phone",type:"string"},
+    {name:"responsableId",type:"int64",fk:"collaborateur"},{name:"divisionId",type:"string"},
+    {name:"customFields",type:"object"},{name:"externalId",type:"string"}
+   ],rw:"read+write",api:"/crm/customers"},
+  {id:"contact",name:"Contact",icon:"📇",domain:"CRM",color:"#3B82F6",x:310,y:40,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"firstName",type:"string"},{name:"lastName",type:"string"},
+    {name:"email",type:"string"},{name:"phone",type:"string"},{name:"function",type:"string"},
+    {name:"clientId",type:"int64",fk:"client"},{name:"siteId",type:"string"}
+   ],rw:"read+write",api:"/crm/contacts"},
+  {id:"prospect",name:"Prospect",icon:"🎯",domain:"CRM",color:"#3B82F6",x:60,y:240,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"name",type:"string"},
+    {name:"email",type:"string"},{name:"status",type:"string"},{name:"sourceId",type:"string"}
+   ],rw:"read+write",api:"/crm/prospects"},
+  {id:"opportunity",name:"Opportunité",icon:"💡",domain:"CRM",color:"#3B82F6",x:310,y:240,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"name",type:"string"},{name:"amount",type:"double"},
+    {name:"probability",type:"float"},{name:"status",type:"string"},
+    {name:"clientId",type:"int64",fk:"client"},{name:"contactId",type:"int64",fk:"contact"}
+   ],rw:"read+write",api:"/crm/opportunities"},
+
+  // Sales domain
+  {id:"devis",name:"Devis",icon:"📝",domain:"Ventes",color:"#10B981",x:580,y:40,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"label",type:"string"},
+    {name:"totalHT",type:"double"},{name:"totalTTC",type:"double"},{name:"status",type:"string"},
+    {name:"clientId",type:"int64",fk:"client"},{name:"contactId",type:"int64",fk:"contact"},
+    {name:"validateurs",type:"array"},{name:"revisionNumber",type:"int64"}
+   ],rw:"read+write",api:"/sales/quotations"},
+  {id:"commande_client",name:"Commande Client",icon:"📦",domain:"Ventes",color:"#10B981",x:580,y:240,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"date",type:"date-time"},
+    {name:"totalHT",type:"double"},{name:"status",type:"string"},
+    {name:"clientId",type:"int64",fk:"client"},{name:"devisId",type:"int64",fk:"devis"}
+   ],rw:"read+write",api:"/sales/orders"},
+  {id:"facture_client",name:"Facture Client",icon:"🧾",domain:"Ventes",color:"#10B981",x:580,y:440,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"number",type:"string"},{name:"date",type:"date-time"},
+    {name:"totalHT",type:"double"},{name:"totalTTC",type:"double"},{name:"status",type:"string"},
+    {name:"clientId",type:"int64",fk:"client"},{name:"projectId",type:"int64",fk:"affaire"}
+   ],rw:"read",api:"/sales/invoices"},
+
+  // Project domain
+  {id:"affaire",name:"Affaire / Projet",icon:"📋",domain:"Projets",color:"#8B5CF6",x:60,y:440,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"name",type:"string"},
+    {name:"stateCode",type:"string"},{name:"startDate",type:"date-time"},{name:"endDate",type:"date-time"},
+    {name:"clientId",type:"int64",fk:"client"},{name:"responsableId",type:"int64",fk:"collaborateur"},
+    {name:"customFields",type:"object"}
+   ],rw:"read+write",api:"/project/projects"},
+  {id:"lot",name:"Lot (Phase)",icon:"📂",domain:"Projets",color:"#8B5CF6",x:60,y:640,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"name",type:"string"},
+    {name:"projectId",type:"int64",fk:"affaire"}
+   ],rw:"read+write",api:"/project/phases"},
+  {id:"tache",name:"Tâche",icon:"✅",domain:"Projets",color:"#8B5CF6",x:310,y:640,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"name",type:"string"},
+    {name:"status",type:"string"},{name:"startDate",type:"date-time"},{name:"endDate",type:"date-time"},
+    {name:"projectId",type:"int64",fk:"affaire"},{name:"phaseId",type:"int64",fk:"lot"},
+    {name:"assigneeId",type:"int64",fk:"collaborateur"}
+   ],rw:"read+write",api:"/project/tasks"},
+
+  // Workforce domain
+  {id:"collaborateur",name:"Collaborateur",icon:"🧑‍💼",domain:"RH",color:"#F59E0B",x:830,y:40,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"matricule",type:"string"},{name:"firstName",type:"string"},
+    {name:"lastName",type:"string"},{name:"email",type:"string"},{name:"position",type:"string"},
+    {name:"managerId",type:"int64",fk:"collaborateur"},{name:"entityId",type:"string"},
+    {name:"businessCard",type:"object"}
+   ],rw:"read",api:"/workforce/employees"},
+  {id:"temps_passe",name:"Temps Passé",icon:"⏱️",domain:"RH",color:"#F59E0B",x:830,y:240,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"date",type:"date-time"},{name:"duration",type:"float"},
+    {name:"description",type:"string"},{name:"status",type:"string"},
+    {name:"employeeId",type:"int64",fk:"collaborateur"},{name:"projectId",type:"int64",fk:"affaire"},
+    {name:"taskId",type:"int64",fk:"tache"}
+   ],rw:"read+write",api:"/workforce/timerecordings"},
+  {id:"absence",name:"Absence",icon:"🏖️",domain:"RH",color:"#F59E0B",x:1020,y:140,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"startDate",type:"date-time"},{name:"endDate",type:"date-time"},
+    {name:"type",type:"string"},{name:"status",type:"string"},
+    {name:"employeeId",type:"int64",fk:"collaborateur"}
+   ],rw:"read+write",api:"/workforce/leaves"},
+  {id:"note_frais",name:"Note de Frais",icon:"💳",domain:"RH",color:"#F59E0B",x:1020,y:340,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"date",type:"date-time"},{name:"amount",type:"double"},
+    {name:"type",type:"string"},{name:"status",type:"string"},{name:"receipt",type:"boolean"},
+    {name:"employeeId",type:"int64",fk:"collaborateur"},{name:"projectId",type:"int64",fk:"affaire"}
+   ],rw:"read+write",api:"/workforce/expenses"},
+
+  // Purchase domain
+  {id:"fournisseur",name:"Fournisseur",icon:"🏭",domain:"Achats",color:"#EF4444",x:830,y:520,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"name",type:"string"},
+    {name:"address",type:"string"},{name:"email",type:"string"},{name:"phone",type:"string"}
+   ],rw:"read+write",api:"/purchase/suppliers"},
+  {id:"commande_fournisseur",name:"Commande Fournisseur",icon:"📋",domain:"Achats",color:"#EF4444",x:830,y:700,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"date",type:"date-time"},
+    {name:"totalHT",type:"double"},{name:"status",type:"string"},
+    {name:"fournisseurId",type:"int64",fk:"fournisseur"},{name:"projectId",type:"int64",fk:"affaire"}
+   ],rw:"read+write",api:"/purchase/purchase-orders"},
+
+  // Support domain
+  {id:"demande_support",name:"Demande Support",icon:"🎧",domain:"Support",color:"#EC4899",x:310,y:840,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"subject",type:"string"},
+    {name:"description",type:"string"},{name:"status",type:"string"},{name:"priority",type:"string"},
+    {name:"severityId",type:"string"},{name:"criticalityId",type:"string"},
+    {name:"clientId",type:"int64",fk:"client"},{name:"contactId",type:"int64",fk:"contact"},
+    {name:"contractId",type:"int64",fk:"contrat_maintenance"}
+   ],rw:"read+write",api:"/support/issues"},
+  {id:"contrat_maintenance",name:"Contrat Maintenance",icon:"📜",domain:"Support",color:"#EC4899",x:60,y:840,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"code",type:"string"},{name:"name",type:"string"},
+    {name:"startDate",type:"date-time"},{name:"endDate",type:"date-time"},
+    {name:"clientId",type:"int64",fk:"client"},{name:"status",type:"string"}
+   ],rw:"read",api:"/support/contracts"},
+
+  // Billing / Finance
+  {id:"reglement",name:"Règlement",icon:"💵",domain:"Finance",color:"#06B6D4",x:580,y:640,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"date",type:"date-time"},{name:"amount",type:"double"},
+    {name:"mode",type:"string"},{name:"status",type:"string"},
+    {name:"factureId",type:"int64",fk:"facture_client"},{name:"clientId",type:"int64",fk:"client"}
+   ],rw:"read+write",api:"/billing/payments"},
+  {id:"ecriture",name:"Écriture Comptable",icon:"📚",domain:"Finance",color:"#06B6D4",x:580,y:840,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"journalCode",type:"string"},{name:"date",type:"date-time"},
+    {name:"accountCode",type:"string"},{name:"debit",type:"double"},{name:"credit",type:"double"},
+    {name:"label",type:"string"}
+   ],rw:"read",api:"/accounting/entries"},
+  {id:"document",name:"Document (GED)",icon:"📁",domain:"Projets",color:"#A855F7",x:310,y:440,
+   fields:[
+    {name:"id",type:"int64",pk:true},{name:"fileName",type:"string"},{name:"type",type:"string"},
+    {name:"creationDate",type:"date-time"},{name:"size",type:"int64"},
+    {name:"projectId",type:"int64",fk:"affaire"},{name:"clientId",type:"int64",fk:"client"}
+   ],rw:"read+write",api:"/documents/documents"}
+];
+
+// Relations derived from FK
+const DB_RELATIONS = [];
+DB_TABLES.forEach(t => {
+  t.fields.forEach(f => {
+    if(f.fk) {
+      const target = DB_TABLES.find(tt => tt.id === f.fk);
+      if(target) DB_RELATIONS.push({from:t.id,to:target.id,field:f.name});
+    }
+  });
+});
+
+let schemaFilter = 'all';
+let selectedTable = null;
+
+function setSchemaFilter(mode, btn) {
+  schemaFilter = mode;
+  document.querySelectorAll('#view-schema .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSchema();
+}
+
+function getFilteredTables() {
+  if(schemaFilter === 'all') return DB_TABLES;
+  if(schemaFilter === 'write') return DB_TABLES.filter(t => t.rw.includes('write'));
+  return DB_TABLES.filter(t => t.rw === 'read');
+}
+
+function renderSchema() {
+  renderSvgSchema();
+  renderEntitySummary();
+}
+
+function renderSvgSchema() {
+  const svg = document.getElementById('schemaSvg');
+  const tables = getFilteredTables();
+  const tableIds = new Set(tables.map(t => t.id));
+  const rels = DB_RELATIONS.filter(r => tableIds.has(r.from) && tableIds.has(r.to));
+
+  const TW = 220, TH_BASE = 36, FIELD_H = 18;
+
+  // Build SVG content
+  let svgContent = '';
+
+  // Defs for arrows and shadows
+  svgContent += `<defs>
+    <marker id="arrowHead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+    </marker>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+    </filter>
+  </defs>`;
+
+  // Draw relations as curved lines
+  rels.forEach(r => {
+    const from = tables.find(t => t.id === r.from);
+    const to = tables.find(t => t.id === r.to);
+    if(!from || !to) return;
+    if(from.id === to.id) return; // self-ref like manager
+
+    const fH = TH_BASE + from.fields.length * FIELD_H + 12;
+    const tH = TH_BASE + to.fields.length * FIELD_H + 12;
+
+    // Center points
+    const fx = from.x + TW/2, fy = from.y + fH/2;
+    const tx = to.x + TW/2, ty = to.y + tH/2;
+
+    // Edge connection points
+    let sx, sy, ex, ey;
+    const dx = tx - fx, dy = ty - fy;
+    if(Math.abs(dx) > Math.abs(dy)) {
+      sx = dx > 0 ? from.x + TW : from.x;
+      sy = from.y + fH/2;
+      ex = dx > 0 ? to.x : to.x + TW;
+      ey = to.y + tH/2;
+    } else {
+      sx = from.x + TW/2;
+      sy = dy > 0 ? from.y + fH : from.y;
+      ex = to.x + TW/2;
+      ey = dy > 0 ? to.y : to.y + tH;
+    }
+
+    const mx = (sx + ex) / 2, my = (sy + ey) / 2;
+    const cx1 = Math.abs(dx) > Math.abs(dy) ? mx : sx;
+    const cy1 = Math.abs(dx) > Math.abs(dy) ? sy : my;
+    const cx2 = Math.abs(dx) > Math.abs(dy) ? mx : ex;
+    const cy2 = Math.abs(dx) > Math.abs(dy) ? ey : my;
+
+    const isHighlight = selectedTable && (r.from === selectedTable || r.to === selectedTable);
+    const color = isHighlight ? '#6366f1' : '#cbd5e1';
+    const width = isHighlight ? 2.5 : 1.2;
+    const opacity = selectedTable && !isHighlight ? 0.2 : 1;
+
+    svgContent += `<path d="M${sx},${sy} C${cx1},${cy1} ${cx2},${cy2} ${ex},${ey}" 
+      fill="none" stroke="${color}" stroke-width="${width}" marker-end="url(#arrowHead)" 
+      opacity="${opacity}" stroke-dasharray="${isHighlight ? '' : ''}"/>`;
+  });
+
+  // Draw table boxes
+  tables.forEach(t => {
+    const fieldCount = t.fields.length;
+    const h = TH_BASE + fieldCount * FIELD_H + 12;
+    const isSelected = selectedTable === t.id;
+    const dimmed = selectedTable && !isSelected && !rels.some(r => (r.from===selectedTable||r.to===selectedTable) && (r.from===t.id||r.to===t.id));
+    const opacity = dimmed ? 0.25 : 1;
+
+    // Card shadow + bg
+    svgContent += `<g opacity="${opacity}" style="cursor:pointer" onclick="selectSchemaTable('${t.id}')">`;
+    svgContent += `<rect x="${t.x}" y="${t.y}" width="${TW}" height="${h}" rx="10" ry="10" fill="white" stroke="${isSelected ? t.color : '#e2e8f0'}" stroke-width="${isSelected ? 2.5 : 1}" filter="url(#shadow)"/>`;
+
+    // Header bar
+    svgContent += `<rect x="${t.x}" y="${t.y}" width="${TW}" height="34" rx="10" ry="10" fill="${t.color}"/>`;
+    svgContent += `<rect x="${t.x}" y="${t.y+20}" width="${TW}" height="14" fill="${t.color}"/>`;
+
+    // Title
+    svgContent += `<text x="${t.x+12}" y="${t.y+22}" fill="white" font-size="12" font-weight="700">${t.icon} ${esc(t.name)}</text>`;
+
+    // RW badge
+    const rwLabel = t.rw === 'read' ? 'R' : 'R/W';
+    const rwColor = t.rw === 'read' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.35)';
+    svgContent += `<rect x="${t.x+TW-32}" y="${t.y+8}" width="22" height="16" rx="4" fill="${rwColor}"/>`;
+    svgContent += `<text x="${t.x+TW-21}" y="${t.y+20}" fill="white" font-size="9" font-weight="700" text-anchor="middle">${rwLabel}</text>`;
+
+    // Fields
+    t.fields.forEach((f, fi) => {
+      const fy = t.y + TH_BASE + 6 + fi * FIELD_H;
+      let prefix = '';
+      if(f.pk) prefix = '🔑 ';
+      else if(f.fk) prefix = '🔗 ';
+
+      svgContent += `<text x="${t.x+12}" y="${fy+12}" font-size="10.5" fill="#374151">`;
+      if(prefix) svgContent += `<tspan font-size="9">${prefix}</tspan>`;
+      svgContent += `<tspan font-family="monospace" font-weight="500">${esc(f.name)}</tspan>`;
+      svgContent += `<tspan fill="#9ca3af" font-size="9.5"> ${esc(f.type)}</tspan>`;
+      svgContent += `</text>`;
+
+      // FK target hint
+      if(f.fk) {
+        svgContent += `<text x="${t.x+TW-12}" y="${fy+12}" font-size="8.5" fill="#818cf8" text-anchor="end">→ ${esc(f.fk)}</text>`;
+      }
+    });
+
+    svgContent += `</g>`;
+  });
+
+  svg.innerHTML = svgContent;
+}
+
+function selectSchemaTable(id) {
+  selectedTable = selectedTable === id ? null : id;
+  renderSvgSchema();
+
+  const panel = document.getElementById('tableDetailPanel');
+  if(!selectedTable) { panel.classList.add('hidden'); return; }
+
+  const t = DB_TABLES.find(x => x.id === selectedTable);
+  if(!t) { panel.classList.add('hidden'); return; }
+
+  panel.classList.remove('hidden');
+  document.getElementById('tableDetailIcon').textContent = t.icon;
+  document.getElementById('tableDetailName').textContent = t.name;
+  document.getElementById('tableDetailDesc').textContent = `Domaine: ${t.domain} • API: ${t.api}`;
+  document.getElementById('tableDetailHeader').style.borderLeftColor = t.color;
+
+  const badges = document.getElementById('tableDetailBadges');
+  badges.innerHTML = `
+    <span class="mode-badge ${t.rw==='read'?'read':'write'}">${t.rw==='read'?'📖 Lecture seule':'✏️ Lecture + Écriture'}</span>
+    <span style="font-size:11px;padding:2px 10px;border-radius:20px;background:${t.color}20;color:${t.color};border:1px solid ${t.color}40;font-weight:600">${t.domain}</span>
+  `;
+
+  // Build fields table
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+  html += '<thead><tr style="border-bottom:2px solid var(--gray-200);text-align:left"><th style="padding:6px 8px;color:var(--gray-500);font-weight:500">Champ</th><th style="padding:6px 8px;color:var(--gray-500);font-weight:500">Type</th><th style="padding:6px 8px;color:var(--gray-500);font-weight:500">Clé</th><th style="padding:6px 8px;color:var(--gray-500);font-weight:500">Relation</th></tr></thead><tbody>';
+  t.fields.forEach(f => {
+    const keyBadge = f.pk ? '<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">PK</span>'
+      : f.fk ? '<span style="background:#e0e7ff;color:#4338ca;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FK</span>' : '<span style="color:var(--gray-300)">—</span>';
+    const rel = f.fk ? `→ <a href="javascript:selectSchemaTable('${f.fk}')" style="color:var(--indigo-600);font-weight:500">${f.fk}</a>` : '<span style="color:var(--gray-300)">—</span>';
+    html += `<tr style="border-bottom:1px solid var(--gray-100)">
+      <td style="padding:6px 8px;font-family:monospace;font-weight:500">${esc(f.name)}</td>
+      <td style="padding:6px 8px;color:var(--gray-500)">${esc(f.type)}</td>
+      <td style="padding:6px 8px">${keyBadge}</td>
+      <td style="padding:6px 8px">${rel}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+
+  // Related tables
+  const related = DB_RELATIONS.filter(r => r.from === t.id || r.to === t.id);
+  if(related.length > 0) {
+    html += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--gray-200)">';
+    html += '<div style="font-weight:700;font-size:12px;color:var(--gray-700);margin-bottom:8px">🔗 Tables liées</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    const seen = new Set();
+    related.forEach(r => {
+      const otherId = r.from === t.id ? r.to : r.from;
+      if(seen.has(otherId)) return; seen.add(otherId);
+      const other = DB_TABLES.find(x => x.id === otherId);
+      if(!other) return;
+      const direction = r.from === t.id ? '→' : '←';
+      html += `<button onclick="selectSchemaTable('${otherId}')" style="font-size:11px;padding:4px 12px;background:${other.color}15;color:${other.color};border:1px solid ${other.color}30;border-radius:8px;cursor:pointer;font-weight:600">${direction} ${other.icon} ${other.name}</button>`;
+    });
+    html += '</div></div>';
+  }
+
+  document.getElementById('tableDetailBody').innerHTML = html;
+}
+
+function renderEntitySummary() {
+  const container = document.getElementById('entitySummary');
+  const tables = getFilteredTables();
+  container.innerHTML = tables.map(t => {
+    const pkFields = t.fields.filter(f => f.pk);
+    const fkFields = t.fields.filter(f => f.fk);
+    const dataFields = t.fields.filter(f => !f.pk && !f.fk);
+    return `
+      <div class="entity-summary-card" onclick="selectSchemaTable('${t.id}');window.scrollTo({top:document.getElementById('svgWrapper').offsetTop-80,behavior:'smooth'})">
+        <div class="entity-summary-header" style="border-left:3px solid ${t.color}">
+          <span class="entity-summary-icon">${t.icon}</span>
+          <span class="entity-summary-name">${t.name}</span>
+          <span class="entity-summary-domain" style="background:${t.color};margin-left:auto">${t.domain}</span>
+        </div>
+        <div class="entity-summary-body">
+          ${t.fields.slice(0,6).map(f => `
+            <div class="entity-field">
+              ${f.pk ? '<span class="entity-field-key">🔑</span>' : f.fk ? '<span class="entity-field-fk">🔗</span>' : '<span style="width:14px;display:inline-block"></span>'}
+              <span class="entity-field-name">${f.name}</span>
+              <span class="entity-field-type">${f.type}</span>
+              ${f.fk ? '<span style="font-size:9px;color:var(--indigo-500)">→ '+f.fk+'</span>' : ''}
+            </div>
+          `).join('')}
+          ${t.fields.length > 6 ? '<div style="font-size:10px;color:var(--gray-400);margin-top:4px">+ '+(t.fields.length-6)+' autres champs...</div>' : ''}
+          <div class="entity-rw">
+            <span class="mode-badge ${t.rw==='read'?'read':'write'}" style="font-size:10px">${t.rw==='read'?'📖 Lecture':'✏️ R/W'}</span>
+            <span style="font-size:10px;color:var(--gray-400);margin-left:auto;font-family:monospace">${t.api}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ======================== INIT ========================
+function init() {
+  renderStats();
+  renderDomainGrid();
+  renderEndpoints();
+  renderSetupSteps();
+  renderQuickChips();
+  updateCodeBlocks();
+}
+init();
+</script>
+</body>
+</html>
