@@ -1421,28 +1421,29 @@ function renderEntitySummary() {
 
 // ======================== INIT ========================
 // ======================== CORS PROXY ========================
-function proxyUrl(targetUrl) {
-  return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+// Embed basic auth credentials directly in the URL for the proxy to forward
+function buildAuthUrl(baseUrl, endpoint, login, password) {
+  try {
+    const urlObj = new URL(baseUrl + endpoint);
+    urlObj.username = login;
+    urlObj.password = password;
+    return urlObj.href;
+  } catch(e) {
+    return baseUrl + endpoint;
+  }
 }
 
-async function corsProxyFetch(url, options) {
-  // Use allorigins proxy to bypass CORS restrictions
-  // For GET requests, we can pass auth via the URL proxy
-  // For all methods, we route through the proxy
-  const proxyTarget = url;
-  const proxyEndpoint = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(proxyTarget);
-
-  // allorigins only supports GET, so for non-GET we try direct first, then corsproxy.io
-  if (options.method && options.method !== 'GET') {
-    const proxyEndpoint2 = 'https://corsproxy.io/?' + encodeURIComponent(url);
-    return fetch(proxyEndpoint2, options);
+async function proxyFetch(url, method, headers, body) {
+  // Use allorigins for GET (supports URL-embedded auth)
+  // Use corsproxy.io for other methods
+  if (method === 'GET') {
+    // Try allorigins first (passes URL-embedded auth)
+    const allOriginsUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    return fetch(allOriginsUrl);
   }
-
-  // For GET, build URL with basic auth in the URL for the proxy
-  return fetch(proxyEndpoint, {
-    method: 'GET',
-    headers: { 'Accept': 'application/json' }
-  });
+  // For write operations, use corsproxy.io
+  const corsProxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+  return fetch(corsProxyUrl, { method, headers, body });
 }
 
 // ======================== CONNECTION TEST ========================
@@ -1464,52 +1465,34 @@ async function testConnection() {
   label.textContent = 'Test en cours...';
 
   const endpoint = document.getElementById('testEndpoint').value || '/akuiteo/rest/workforce/employees';
-  const url = baseUrl + endpoint;
+  // Build URL with credentials embedded (user:pass@host) so proxy forwards auth
+  const authUrl = buildAuthUrl(baseUrl, endpoint, login, password);
 
   try {
-    // Try direct fetch first
-    const resp = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(login + ':' + password),
-        'Accept': 'application/json'
-      }
-    });
-    if (resp.ok) {
+    const resp = await proxyFetch(authUrl, 'GET');
+    const text = await resp.text();
+    // allorigins returns 200 even on errors, check the content
+    let isAuthError = false;
+    try {
+      const json = JSON.parse(text);
+      if (json.status === 401 || json.status === 403 || json.statusCode === 401) isAuthError = true;
+    } catch(e) {
+      if (text.includes('401') || text.includes('Unauthorized')) isAuthError = true;
+    }
+
+    if (resp.ok && !isAuthError && text.length > 2) {
       btn.className = 'conn-btn connected';
-      label.textContent = 'Connecté';
-    } else if (resp.status === 401 || resp.status === 403) {
+      label.textContent = 'Connecté (via proxy)';
+    } else if (isAuthError) {
       btn.className = 'conn-btn disconnected';
-      label.textContent = 'Erreur ' + resp.status + ' (auth)';
+      label.textContent = 'Erreur 401 (identifiants)';
     } else {
       btn.className = 'conn-btn disconnected';
-      label.textContent = 'Erreur ' + resp.status;
+      label.textContent = 'Erreur (réponse vide)';
     }
   } catch (e) {
-    // CORS blocked - try via proxy
-    try {
-      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-      const resp2 = await fetch(proxyUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Basic ' + btoa(login + ':' + password),
-          'Accept': 'application/json'
-        }
-      });
-      if (resp2.ok) {
-        btn.className = 'conn-btn connected';
-        label.textContent = 'Connecté (via proxy)';
-      } else if (resp2.status === 401 || resp2.status === 403) {
-        btn.className = 'conn-btn disconnected';
-        label.textContent = 'Erreur ' + resp2.status + ' (auth)';
-      } else {
-        btn.className = 'conn-btn disconnected';
-        label.textContent = 'Erreur ' + resp2.status;
-      }
-    } catch (e2) {
-      btn.className = 'conn-btn disconnected';
-      label.textContent = 'Injoignable (CORS bloqué)';
-    }
+    btn.className = 'conn-btn disconnected';
+    label.textContent = 'Injoignable';
   }
 }
 
@@ -1530,50 +1513,30 @@ async function sendApiRequest() {
   statusEl.textContent = 'Envoi en cours...';
   statusEl.style.color = 'var(--gray-500)';
 
-  const url = v.baseUrl + v.endpoint;
   const login = document.getElementById('testLogin').value;
   const password = document.getElementById('testPassword').value;
   const isWrite = v.method !== 'GET';
+  const authUrl = buildAuthUrl(v.baseUrl, v.endpoint, login, password);
 
   const headers = {
     'Authorization': 'Basic ' + btoa(login + ':' + password),
     'Accept': 'application/json'
   };
   if (isWrite) headers['Content-Type'] = 'application/json';
+  const body = (isWrite && v.body) ? v.body : undefined;
 
-  const fetchOpts = {
-    method: v.method,
-    headers: headers
-  };
-  if (isWrite && v.body) fetchOpts.body = v.body;
-
-  async function doFetch(targetUrl) {
-    const resp = await fetch(targetUrl, fetchOpts);
+  try {
+    const resp = await proxyFetch(authUrl, v.method, headers, body);
     const text = await resp.text();
     let pretty = text;
     try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch(e) {}
-    return { status: resp.status, ok: resp.ok, body: pretty };
-  }
-
-  try {
-    let result;
-    try {
-      result = await doFetch(url);
-    } catch (e) {
-      // CORS blocked, try proxy
-      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-      result = await doFetch(proxyUrl);
-      statusEl.textContent = '(via proxy CORS)';
-      statusEl.style.color = 'var(--gray-400)';
-    }
 
     responseSection.style.display = '';
-    responseStatus.textContent = result.status;
-    responseStatus.style.color = result.ok ? '#10B981' : '#EF4444';
-    responseBlock.textContent = result.body;
-    if (!statusEl.textContent.includes('proxy')) {
-      statusEl.textContent = '';
-    }
+    responseStatus.textContent = resp.status;
+    responseStatus.style.color = resp.ok ? '#10B981' : '#EF4444';
+    responseBlock.textContent = pretty;
+    statusEl.textContent = '(via proxy CORS)';
+    statusEl.style.color = 'var(--gray-400)';
   } catch (e) {
     responseSection.style.display = '';
     responseStatus.textContent = 'Erreur';
